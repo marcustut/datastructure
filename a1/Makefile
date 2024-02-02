@@ -7,9 +7,10 @@ J = java
 CLASSPATH = bin
 
 # All the source files in the src directory
+SYLVADIR = ../sylva/src/sylva
 SOURCES = \
-	src/Stack.java \
-	src/Main.java 
+	$(shell find src -name '*.java') \
+	$(shell find $(SYLVADIR) -name '*.java')
 
 # The default make target entry
 default: build
