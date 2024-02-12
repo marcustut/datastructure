@@ -7,10 +7,11 @@ J = java
 CLASSPATH = bin
 
 # All the source files in the src directory
-SYLVADIR = ../sylva/src/sylva
 SOURCES = \
-	$(shell find src -name '*.java') \
-	$(shell find $(SYLVADIR) -name '*.java')
+	$(shell find src -name '*.java' -not -path 'src/tests/*')
+
+TEST_SOURCES = \
+	$(shell find src/tests -name '*.java')
 
 # The default make target entry
 default: build
@@ -22,6 +23,10 @@ run: default
 # Build the program
 build: 
 	$(JC) $(JFLAGS) -d $(CLASSPATH) $(SOURCES)
+
+test: 
+	$(JC) $(JFLAGS) -d $(CLASSPATH) $(SOURCES) $(TEST_SOURCES) && \
+		$(J) -cp $(CLASSPATH) tests/Main
 
 # RM is a predefined macro in make (RM = rm -f)
 clean:

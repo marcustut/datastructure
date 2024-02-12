@@ -72,6 +72,14 @@ public class Vector<T> extends AbstractList<T> {
         this.size = 0;
     }
 
+    public void quicksort() {
+
+    }
+
+    public void mergesort() {
+
+    }
+
     // boolean equals(Object o);
 
     // int hashCode();
