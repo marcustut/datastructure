@@ -1,17 +1,17 @@
-package smq;
+package mq;
 
 import java.io.IOException;
 import java.util.logging.Logger;
 
-import smq.network.Server;
+import mq.network.Server;
 
-public class SMQ {
+public class MQ {
     private int pollingRateMs = 1000;
     private Server server;
     private Queue<String> queue;
-    private Logger logger = Logger.getLogger(SMQ.class.getName());
+    private Logger logger = Logger.getLogger(MQ.class.getName());
 
-    public SMQ(int port, int pollingRateMs) {
+    public MQ(int port, int pollingRateMs) {
         this.pollingRateMs = pollingRateMs;
         this.queue = new Queue<String>();
         this.server = new Server(port, this.queue);

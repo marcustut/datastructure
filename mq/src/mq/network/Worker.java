@@ -1,10 +1,11 @@
-package smq.network;
+package mq.network;
 
 import java.net.Socket;
 import java.util.concurrent.ExecutorService;
-import java.io.*;
 
-import smq.Queue;
+import mq.Queue;
+
+import java.io.*;
 
 public class Worker implements Runnable {
     private Socket socket;

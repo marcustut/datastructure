@@ -1,4 +1,4 @@
-package smq;
+package mq;
 
 import java.util.AbstractQueue;
 import java.util.Iterator;

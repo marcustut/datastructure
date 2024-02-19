@@ -1,6 +1,6 @@
 package tests;
 
-import smq.Queue;
+import mq.Queue;
 
 public class QueueTest {
     public static void queueAdd(Context ctx) {

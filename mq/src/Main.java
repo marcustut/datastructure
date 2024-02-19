@@ -1,9 +1,9 @@
-import smq.SMQ;
+import mq.MQ;
 
 class Main {
     public static void main(String[] args) throws Exception {
         // Start a SMQ server at port 3333 with polling rate of 10 milliseconds
-        SMQ mq = new SMQ(3333, 10);
+        MQ mq = new MQ(3333, 10);
         mq.start();
 
         // Register a shutdown hook (to catch CTRL+C or SIGTERM, etc.)
