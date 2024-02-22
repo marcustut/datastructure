@@ -3,7 +3,6 @@ package benchmark;
 import mq.Queue;
 import java.io.*;
 import java.util.*;
-import java.util.concurrent.*;
 
 class Main {
     static final int[] NUM_OPS = {100, 1000, 10000, 100000, 1000000, 10000000};

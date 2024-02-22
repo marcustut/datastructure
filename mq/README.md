@@ -163,7 +163,7 @@ For example, the following snippet is taken from the test code and it shows the 
     List<Integer> list = stream.map(x -> x.length()).collect(Collectors.toList());
 ```
 
-## Use cases <a id="Use cases"></a>
+## Use cases <a id="use-cases"></a>
 
 ...
 

@@ -7,8 +7,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.AbstractQueue;
 
-import mq.Queue;
-
 public class Server {
     private ExecutorService executorService = Executors.newCachedThreadPool();
     private Thread thread;

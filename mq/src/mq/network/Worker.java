@@ -4,8 +4,6 @@ import java.net.Socket;
 import java.util.AbstractQueue;
 import java.util.concurrent.ExecutorService;
 
-import mq.Queue;
-
 import java.io.*;
 
 public class Worker implements Runnable {
