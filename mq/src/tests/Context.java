@@ -41,6 +41,15 @@ public class Context {
         System.out.printf("⛔️\n");
     }
 
+    public void fail(String name, String reason) {
+        if (!tests.containsKey(name)) {
+            System.err.printf("Failing test of name '%s' but it does not exist\n", name);
+            System.exit(1);
+        }
+        tests.put(name, Status.FAILED);
+        System.out.printf("⛔️ %s\n", reason);
+    }
+
     public void report() {
         int total = tests.size();
         int passed = 0;

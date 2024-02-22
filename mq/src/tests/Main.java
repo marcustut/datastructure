@@ -5,6 +5,7 @@ class Main {
         Context ctx = new Context();
 
         QueueTest.queueAdd(ctx);
+        QueueTest.queueIteratorToStream(ctx);
 
         ctx.report();
     }
