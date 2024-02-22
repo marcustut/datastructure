@@ -6,7 +6,7 @@ import java.util.logging.Logger;
 import mq.network.Server;
 
 public class MQ {
-    private int pollingRateMs = 1000;
+    private int pollingRateMs;
     private Server server;
     private Queue<String> queue;
     private Logger logger = Logger.getLogger(MQ.class.getName());
@@ -19,7 +19,7 @@ public class MQ {
 
     public void start() {
         try {
-            this.server.start();
+            server.start();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -27,13 +27,17 @@ public class MQ {
 
     public void stop() {
         logger.warning("Stopping server");
-        this.server.stop();
+        server.stop();
+    }
+
+    public int pending() {
+        return queue.size();
     }
 
     public String recv() throws InterruptedException {
         String result = queue.poll();
         while (result == null) {
-            Thread.sleep(this.pollingRateMs);
+            Thread.sleep(pollingRateMs);
             result = queue.poll();
         }
         return result;

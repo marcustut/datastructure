@@ -1,5 +1,5 @@
 # define compiler and compiler flag variables
-JFLAGS = -g
+JFLAGS = -g -Xlint:deprecation
 JC = javac
 J = java
 
@@ -21,12 +21,11 @@ run: default
 	$(J) -cp $(CLASSPATH) Main
 
 # Build the program
-build: 
-	$(JC) $(JFLAGS) -d $(CLASSPATH) $(SOURCES)
+build:
+	$(JC) $(JFLAGS) -d $(CLASSPATH) $(SOURCES) $(TEST_SOURCES)
 
-test: 
-	$(JC) $(JFLAGS) -d $(CLASSPATH) $(SOURCES) $(TEST_SOURCES) && \
-		$(J) -cp $(CLASSPATH) tests/Main
+test: build
+	$(J) -cp $(CLASSPATH) tests/Main
 
 # RM is a predefined macro in make (RM = rm -f)
 clean:

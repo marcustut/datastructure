@@ -2,6 +2,7 @@ package mq;
 
 import java.util.AbstractQueue;
 import java.util.Iterator;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Queue<T> extends AbstractQueue<T> {
     private class Node {
@@ -21,7 +22,6 @@ public class Queue<T> extends AbstractQueue<T> {
      * <p>
      * We only add an element to the tail of the queue so it is O(1).
      * </p>
-     * 
      * @param e - element to be added
      * @return true if element is added, false otherwise
      */
@@ -52,17 +52,16 @@ public class Queue<T> extends AbstractQueue<T> {
      * <p>
      * We only take the element from the head of the queue so it is O(1).
      * </p>
-     * 
      * @return data if found, null otherwise
      */
     @Override
     public T poll() {
-        if (this.head == null)
+        if (head == null || size == 0)
             return null;
 
-        Node cur = this.head;
-        this.head = cur.next;
-        this.size--;
+        Node cur = head;
+        head = cur.next;
+        size--;
 
         return cur.data;
     }
@@ -72,14 +71,13 @@ public class Queue<T> extends AbstractQueue<T> {
      * <p>
      * O(1) since we only look at the head node.
      * </p>
-     * 
      * @return data if found, null otherwise
      */
     @Override
     public T peek() {
-        if (this.head == null)
+        if (head == null)
             return null;
-        return this.head.data;
+        return head.data;
     }
 
     /**
@@ -88,7 +86,6 @@ public class Queue<T> extends AbstractQueue<T> {
      * Constant time operation because we are just returning an iterator we are not
      * iterating through the queue, therefore O(1).
      * </p>
-     * 
      * @return an iterator
      */
     @Override
@@ -115,12 +112,11 @@ public class Queue<T> extends AbstractQueue<T> {
      * <p>
      * We are storing the queue size so accessing it is constant time, so O(1)
      * </p>
-     * 
      * @return size of the queue
      */
     @Override
     public int size() {
-        return this.size;
+        return size;
     }
 
     /**
@@ -129,11 +125,10 @@ public class Queue<T> extends AbstractQueue<T> {
      * We are storing the queue size so checking if it is empty is constant time, so
      * O(1)
      * </p>
-     * 
+     *
      * @return true if queue is empty, false otherwise
      */
     public boolean isEmpty() {
         return size == 0;
     }
-
 }

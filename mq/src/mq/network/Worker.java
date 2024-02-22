@@ -53,7 +53,8 @@ public class Worker implements Runnable {
 
             System.out.printf("A producer disconnected from %s\n", socket.getRemoteSocketAddress());
         } catch (IOException e) {
-            e.printStackTrace();
+            if (!e.getMessage().equals("Connection reset"))
+                e.printStackTrace();
         }
     }
 }
