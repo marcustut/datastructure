@@ -39,7 +39,9 @@ For context, the criterias for our selection are:
 
 Using an array to build the queue is arguably the simplest implementation since it is the most common data stucture. However, there are certain downsides to it as we dig further into the details of it.
 
-![array_queue](images/array_queue.png)
+<div align="center">
+    <img alt="Array-based queue" src="images/array_queue.png">
+</div>
 
 *<div align="center">Figure 1: Fixed-size array</div>*
 
@@ -55,7 +57,9 @@ However there are several shortcomings to this approach one being that with ever
 
 To overcome the shortcomings of the array-based queue, another common approach is to "wrap-around" the array resulting the queue to be circular, refer to the figure below for an illustration.
 
-![circular_queue](images/circular_queue.png)
+<div align="center">
+    <img alt="Circular queue" src="images/circular_queue.png">
+</div>
 
 *<div align="center">Figure 2: Circular queue with an array</div>*
 
@@ -69,7 +73,9 @@ That said, the significant downside to this solution is that when the buffer is 
 
 ### Linked list based queue <a id="linked-list-based-queue"></a>
 
-![linked_list_queue](images/linked_list_queue.png)
+<div align="center">
+    <img alt="Linked list queue" src="images/linked_list_queue.png">
+</div>
 
 *<div align="center">Figure 3: Queue using singly linked list</div>*
 
@@ -91,7 +97,9 @@ In the end we opted for a linked list based queue due to the following reasons:
 
 On top of that, we made an optimisation to keep track of a `tail` node so that offering a new message would be also `O(1)` since the need to traverse the list has been lifted. So our implementation of a linked list queue resembles the following figure.
 
-![our_queue](images/our_queue.png)
+<div align="center">
+    <img alt="Our queue" src="images/our_queue.png">
+</div>
 
 *<div align="center">Figure 4: Queue using singly linked list with tail</div>*
 
