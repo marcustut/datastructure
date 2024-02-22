@@ -13,6 +13,9 @@ SOURCES = \
 TEST_SOURCES = \
 	$(shell find src/tests -name '*.java')
 
+BENCHMARK_SOURCES = \
+	$(shell find src/benchmark -name '*.java')
+
 # The default make target entry
 default: build
 
@@ -22,10 +25,14 @@ run: default
 
 # Build the program
 build:
-	$(JC) $(JFLAGS) -d $(CLASSPATH) $(SOURCES) $(TEST_SOURCES)
+	$(JC) $(JFLAGS) -d $(CLASSPATH) $(SOURCES) $(TEST_SOURCES) $(BENCHMARK_SOURCES)
 
 test: build
 	$(J) -cp $(CLASSPATH) tests/Main
+
+benchmark: build
+	$(J) -cp $(CLASSPATH) benchmark/Main && \
+	   python plot.py
 
 # RM is a predefined macro in make (RM = rm -f)
 clean:

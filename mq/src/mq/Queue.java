@@ -2,7 +2,6 @@ package mq;
 
 import java.util.AbstractQueue;
 import java.util.Iterator;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class Queue<T> extends AbstractQueue<T> {
     private class Node {

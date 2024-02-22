@@ -1,6 +1,7 @@
 package mq.network;
 
 import java.net.Socket;
+import java.util.AbstractQueue;
 import java.util.concurrent.ExecutorService;
 
 import mq.Queue;
@@ -9,10 +10,10 @@ import java.io.*;
 
 public class Worker implements Runnable {
     private Socket socket;
-    private Queue<String> queue;
+    private AbstractQueue<String> queue;
     private ExecutorService executor;
 
-    public Worker(Socket socket, Queue<String> queue, ExecutorService executor) {
+    public Worker(Socket socket, AbstractQueue<String> queue, ExecutorService executor) {
         this.socket = socket;
         this.queue = queue;
         this.executor = executor;

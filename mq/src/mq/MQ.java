@@ -1,6 +1,7 @@
 package mq;
 
 import java.io.IOException;
+import java.util.AbstractQueue;
 import java.util.logging.Logger;
 
 import mq.network.Server;
@@ -8,7 +9,7 @@ import mq.network.Server;
 public class MQ {
     private int pollingRateMs;
     private Server server;
-    private Queue<String> queue;
+    private AbstractQueue<String> queue;
     private Logger logger = Logger.getLogger(MQ.class.getName());
 
     public MQ(int port, int pollingRateMs) {

@@ -5,6 +5,7 @@ import java.net.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.AbstractQueue;
 
 import mq.Queue;
 
@@ -13,10 +14,10 @@ public class Server {
     private Thread thread;
     private ServerSocket serverSocket;
     private int port;
-    private Queue<String> queue;
+    private AbstractQueue<String> queue;
     private volatile boolean running = false;
 
-    public Server(int port, Queue<String> queue) {
+    public Server(int port, AbstractQueue<String> queue) {
         this.port = port;
         this.queue = queue;
     }
