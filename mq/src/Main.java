@@ -54,10 +54,6 @@ class Main {
         // Spawn producer threads
         Main.spawnProducerThreads(NUM_PRODUCERS, PRODUCE_RATE);
 
-        for (int i = 0; i < NUM_PRODUCERS; i++) {
-            System.out.println("Producer " + i + ": " + producerStates[i]);
-        }
-
         // Run a repeated task on an interval to measure messages received
         TimerTask repeatedTask = new TimerTask() {
             public void run() {
@@ -98,7 +94,7 @@ class Main {
 
                         producerStates[idx] = false;
                         System.out.println("Producer " + idx + " shut down successfully");
-                    } catch(Exception e) {
+                    } catch (Exception e) {
                         System.err.println("An exception occured in producer thread");
                     }
                 }
@@ -114,8 +110,8 @@ class Main {
         Random random = new Random();
 
         return random.ints(leftLimit, rightLimit + 1)
-          .limit(length)
-          .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
-          .toString();
+                .limit(length)
+                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
+                .toString();
     }
 }
