@@ -23,6 +23,9 @@ default: build
 run: default
 	$(J) -cp $(CLASSPATH) Main
 
+run-email: default
+	$(J) -cp $(CLASSPATH) examples/Email
+
 # Build the program
 build:
 	$(JC) $(JFLAGS) -d $(CLASSPATH) $(SOURCES) $(TEST_SOURCES) $(BENCHMARK_SOURCES)
@@ -31,8 +34,10 @@ test: build
 	$(J) -cp $(CLASSPATH) tests/Main
 
 benchmark: build
-	$(J) -cp $(CLASSPATH) benchmark/Main && \
-	   python plot.py
+	$(J) -cp $(CLASSPATH) benchmark/Main
+
+plot:
+	python plot.py
 
 # RM is a predefined macro in make (RM = rm -f)
 clean:

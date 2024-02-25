@@ -21,7 +21,7 @@
 
 ## Abstract <a id="abstract"></a>
 
-...
+This project explores the design and implementation of a message queue system in Java, focusing on the underlying data structure used for efficient communication. Addressing the need for a reliable communication layer across numerous services, we evaluate various queue implementations, including array-based, circular, and linked list-based queues, considering factors such as FIFO order, time complexity, and latency stability. Ultimately, we opt for a linked list-based queue, highlighting its advantages in dynamic resizing, avoidance of message loss, and consistent performance. The provided Java code implements this queue as a generic class and adheres to the Java Collections Framework, demonstrating its versatility for future use cases. Additionally, we present a real-world use case for our message queue system, illustrating its application as a task queue for an email notification service. Finally, we conduct a performance benchmark, comparing the latency and throughput of our implementation with Java standard library queues. The results showcase the competitive performance of our linked list-based queue for expected traffic, making it a suitable choice for applications with a moderate workload.
 
 ## Background <a id="background"></a>
 
@@ -167,7 +167,191 @@ For example, the following snippet is taken from the test code and it shows the 
 
 ## Use cases <a id="use-cases"></a>
 
+### Use case 1: Producer-consumer across different threads
+
+In `src/Main.java` we provided a sample use case for the message queue where a single consumer starts in the main thread while there are 10 other producer threads producing random messages in the background. The purpose of this example is to provide a proof of concept and test the message queue for TCP connectivity. 
+
+Following snippet shows the output of the example program where we can see that message queue is listening on port 3333 for TCP connections. The consumer on the main thread merely count how many messages it received in 1 second and print it out to the console.
+
+```
+❯ make run
+javac -g -Xlint:deprecation -d bin src/benchmark/Main.java src/Main.java src/mq/MQ.java src/mq/network/Worker.java src/mq/network/Server.java src/mq/Queue.java src/tests/Context.java src/tests/QueueTest.java src/tests/Main.java src/benchmark/Main.java
+java -cp bin Main
+Listening for TCP connections on port 3333
+A producer connected from /127.0.0.1:54675
+A producer connected from /127.0.0.1:54677
+A producer connected from /127.0.0.1:54679
+A producer connected from /127.0.0.1:54676
+A producer connected from /127.0.0.1:54680
+A producer connected from /127.0.0.1:54678
+A producer connected from /127.0.0.1:54682
+A producer connected from /127.0.0.1:54681
+A producer connected from /127.0.0.1:54683
+A producer connected from /127.0.0.1:54684
+Processed 47 messages in 1 second
+Processed 61 messages in 1 second
+Processed 72 messages in 1 second
+Processed 70 messages in 1 second
 ...
+```
+
+To stop the program, we can press `CTRL + C` to send a `SIGINT` signal to the program and the program will gracefully shut down the threads and the message queue. The snippet below shows the console output when `CTRL + C` is invoked.
+
+```
+^CShutting down...
+Signaling all producers to shutdown...
+Producer 4 shut down successfully
+A producer disconnected from /127.0.0.1:54678
+Producer 2 shut down successfully
+Producer 8 shut down successfully
+Producer 3 shut down successfully
+Producer 6 shut down successfully
+A producer disconnected from /127.0.0.1:54676
+Producer 5 shut down successfully
+A producer disconnected from /127.0.0.1:54677
+Producer 9 shut down successfully
+Producer 7 shut down successfully
+A producer disconnected from /127.0.0.1:54682
+Producer 0 shut down successfully
+A producer disconnected from /127.0.0.1:54683
+Producer 1 shut down successfully
+A producer disconnected from /127.0.0.1:54684
+All producers shutdown successfully
+Stopping MQ...
+MQ stopped successfully
+```
+
+### Use case 2: Task Queue for Email Notification Service
+
+Email notification service for a small online marketplace. Users of the marketplace can subscribe to receive email notifications for various events, such as new product listings, order updates, or promotions. As the user base grows, the system needs to handle sending a large volume of emails efficiently and reliably.
+
+Implemented Message Queue System:
+
+*1. Task Queuing:*
+  
+Use a message queue system to queue email notification tasks. Each task represents an email to be sent, including recipient, subject, and content.
+  
+In the provided code, the Queue<T> class serves as the underlying data structure for the task queue. It provides methods for adding tasks (enqueueing) and retrieving tasks (dequeuing), ensuring thread-safe access to the queue.
+  
+*2. Producer-Consumer Architecture:*
+ 
+Producer: In the provided code, the producer is represented by the application code responsible for triggering email notifications. It enqueues email tasks into the message queue.
+
+Consumer: The worker processes in the Worker class act as consumers. They dequeue tasks from the message queue and perform the corresponding email-sending operations.
+
+<div align="center">
+    <img alt="Use case architecture" src="images/usecase_arch.png">
+</div>
+
+*<div align="center">Figure 5: Message Queue Architecture</div>*
+  
+*3. Asynchronous Processing:*
+
+Decouple email sending from the user interaction flow by using asynchronous processing with the message queue. Users can trigger email notifications without waiting for emails to be sent, improving responsiveness. The `ExecutorService` in the `Server` class manages the execution of worker threads, allowing for asynchronous task processing without blocking the main thread.
+
+```java
+// Inside Server class
+// Start worker thread to handle incoming connections
+executorService.execute(new Worker(socket, queue, executorService));
+```
+
+   
+*4. Scalability:*
+  
+Scale the email notification service horizontally by adding more worker processes to handle increased email load during peak times. The message queue system distributes tasks evenly among available workers, ensuring efficient resource utilization. Cloud-based message queue services offer dynamic provisioning capabilities, enabling the email notification service to scale up or down based on demand, ensuring cost efficiency.
+
+  *5. Error Handling:*
+
+Implement retry logic and error handling within the worker processes to handle transient failures, such as temporary network issues or email service outages. Failed email tasks can be retried or moved to a dead-letter queue for manual inspection and resolution.
+  
+1. Retry Logic:
+When an error occurs during email sending (e.g., network timeout, SMTP server error), the worker process can implement retry logic to attempt sending the email again.
+The retry logic can include configurable parameters such as maximum retry attempts, backoff intervals between retries, and exponential backoff strategies to mitigate congestion.
+
+2. Error Logging:
+In case of failures during email sending, it's essential to log relevant error information for debugging and troubleshooting purposes.
+Errors can be logged to standard output/error streams, log files, or a centralized logging system for easier monitoring and analysis.
+
+3. Dead-Letter Queue:
+If an email task repeatedly fails after exhausting retry attempts, it may be moved to a dead-letter queue for manual inspection and resolution.
+A dead-letter queue allows administrators to review and address failed tasks, investigate underlying issues, and take appropriate corrective actions.
+
+*6. Monitoring and Metrics:*
+  Monitor the message queue system and worker processes to track email-sending performance, queue length, and error rates.
+  Use metrics to identify bottlenecks, optimize resource allocation, and ensure timely delivery of email notifications.
+  
+Key Metrics to Monitor:
+
+- Queue Length:
+
+The length of the message queue indicates the number of pending email tasks waiting to be processed.
+Monitoring queue length helps assess system workload and identify potential bottlenecks or congestion points.
+Example: Implement a method to periodically log the current queue length to track changes over time.
+
+```java
+// Inside Server class
+public void logQueueLength() {
+    System.out.println("Queue Length: " + queue.size());
+}
+```
+
+- Throughput:
+
+Throughput measures the rate at which email tasks are processed by the system.
+Monitoring throughput helps evaluate system performance and capacity, ensuring that the system can handle the expected workload efficiently.
+
+Example: We can calculate and log the throughput by measuring the rate of email tasks processed per unit of time.
+
+```java
+// Inside Worker class
+private long startTime = System.currentTimeMillis();
+private long processedTasks = 0;
+
+public void logThroughput() {
+    long currentTime = System.currentTimeMillis();
+    long elapsedTime = currentTime - startTime;
+    double throughput = (double) processedTasks / (elapsedTime / 1000.0); // Tasks per second
+    System.out.println("Throughput: " + throughput + " tasks/sec");
+}
+```
+
+- Latency:
+
+Latency measures the time taken to process email tasks from enqueueing to completion.
+Monitoring latency helps identify performance issues and optimize system responsiveness.
+
+Example: Record the start and end times of email-sending operations to calculate the latency.
+```java
+// Inside Worker class
+public void sendEmailWithLatencyMeasurement(String emailTask) {
+    long startTime = System.currentTimeMillis();
+    // Perform email sending operation
+    long endTime = System.currentTimeMillis();
+    long latency = endTime - startTime;
+    System.out.println("Latency: " + latency + " milliseconds");
+}
+```
+
+- Error Rates:
+
+Error rates track the frequency of failed email-sending operations or other system errors.
+Monitoring error rates helps detect issues early, allowing for timely intervention and resolution.
+
+Example: Count and log the number of failed email-sending operations to track the error rate.
+
+```java
+// Inside Worker class
+private int failedTasks = 0;
+
+public void logErrorRate() {
+    System.out.println("Error Rate: " + ((double) failedTasks / processedTasks) ** 100 + "%");
+}
+```
+
+Visualization and Alerting:
+
+In addition to logging metrics, we used visualizing them using monitoring tools or dashboards for easy analysis and interpretation.
+Implement alerting mechanisms to notify administrators or operators of critical issues or abnormal system behavior, allowing for prompt intervention and resolution.
 
 ## Performance benchmark <a id="performance-benchmark"></a>
 
