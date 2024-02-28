@@ -124,6 +124,16 @@ public class BST<T extends Comparable<T>> implements Tree<T> {
    */
   @Override
   public boolean contains(T element) {
+    return contains(root, element) != null;
+  }
+
+  /**
+   * Search for a node in the tree.
+   * 
+   * @param element - the element to search for
+   * @return node if the element is found and null otherwise
+   */
+  public T search(T element) {
     return contains(root, element);
   }
 
@@ -133,12 +143,12 @@ public class BST<T extends Comparable<T>> implements Tree<T> {
    * 
    * @param node    - node of the tree
    * @param element - the element to search for
-   * @return true if duplicate of the element is found and false otherwise
+   * @return node if the element is found and null otherwise
    */
-  private boolean contains(Node node, T element) {
+  private T contains(Node node, T element) {
     // Base case: reached bottom of the tree and found none
     if (node == null)
-      return false;
+      return null;
 
     // If element is larger, traverse the right subtree
     if (element.compareTo(node.data) > 0)
@@ -148,7 +158,7 @@ public class BST<T extends Comparable<T>> implements Tree<T> {
       return contains(node.left, element);
     // If the element is equal, the duplicate has been found
     else
-      return true;
+      return node.data;
   }
 
   /**

@@ -4,12 +4,30 @@
 package lob;
 
 import org.junit.jupiter.api.Test;
+
+import lob.LOB.Side;
+
 import static org.junit.jupiter.api.Assertions.*;
 
-class AppTest {
+class LOBTest {
     @Test
-    void lob() {
+    void testLimitCancel() {
         LOB lob = new LOB();
-        // assertNotNull(classUnderTest.getGreeting(), "app should have a greeting");
+
+        // initially should have no best buy / sell
+        assertEquals(lob.best_buy(), 0);
+        assertEquals(lob.best_sell(), 0);
+
+        /* test buy order scenario */
+        lob.limit(lob.new Order(1, Side.BUY, 1, 1000)); // insert a buy order
+        assertEquals(lob.best_buy(), 1000); // now best buy should be the newly inserted order
+        lob.cancel(1); // cancel the buy order
+        assertEquals(lob.best_buy(), 0); // now best buy should be zero since no orders
+
+        /* test sell order scenario */
+        lob.limit(lob.new Order(2, Side.SELL, 1, 1000)); // insert a sell order
+        assertEquals(lob.best_sell(), 1000); // now best sell should be the newly inserted order
+        lob.cancel(2); // cancel the sell order
+        assertEquals(lob.best_sell(), 0); // now best sell should be zero since no orders
     }
 }

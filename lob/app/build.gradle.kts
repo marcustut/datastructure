@@ -23,6 +23,9 @@ dependencies {
 
     // This dependency is used by the application.
     implementation(libs.guava)
+
+    // This dependency is for connecting to WebSocket servers.
+    implementation("org.java-websocket:Java-WebSocket:1.5.6")
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
@@ -33,11 +36,16 @@ java {
 }
 
 application {
-    // Define the main class for the application.
-    mainClass = "lob.example.App"
+    // Select a different main class based on specified property
+    if (hasProperty("launch")) {
+        mainClass.set("${property("launch")}")
+    }
 }
 
 tasks.named<Test>("test") {
     // Use JUnit Platform for unit tests.
     useJUnitPlatform()
+
+    // Show the STDOUT and STDERR during test execution.
+    testLogging.showStandardStreams = true
 }
