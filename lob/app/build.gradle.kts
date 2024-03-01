@@ -26,6 +26,9 @@ dependencies {
 
     // This dependency is for connecting to WebSocket servers.
     implementation("org.java-websocket:Java-WebSocket:1.5.6")
+
+    // This dependency is for JSON encode / decode.
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.16.0")
 }
 
 // Apply a specific Java toolchain to ease working on different environments.

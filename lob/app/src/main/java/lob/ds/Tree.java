@@ -15,6 +15,7 @@ public interface Tree<T extends Comparable<T>> {
     public enum TraversalOrder {
         InOrderTraversal, // (left, root, right)
         PreOrderTraversal, // (root, left, right)
+        PostOrderTraversal, // (right, root, left)
     }
 
     public boolean isEmpty();

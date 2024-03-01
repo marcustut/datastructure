@@ -80,25 +80,6 @@ public class BST<T extends Comparable<T>> implements Tree<T> {
   }
 
   /**
-   * Return the smallest node counting from the root given
-   * 
-   * @param root - the root (a node in the tree)
-   * @return the data of the smallest node (leftmost node) from the given node
-   */
-  private T min(Node root) {
-    // Start from the root given
-    Node node = root;
-
-    // Keep looking for the left node until there's none
-    while (node.left != null)
-      node = node.left;
-
-    // Return the leftmost node
-    return node.data;
-  }
-
-  //
-  /**
    * Return the greatest node in the tree (rightmost node)
    * 
    * @return the data of the greatest node (rightmost node) in the tree
@@ -176,14 +157,11 @@ public class BST<T extends Comparable<T>> implements Tree<T> {
       return true;
     }
 
-    // If the element is larger than root, insert it at right subtree
-    if (element.compareTo(root.data) > 0)
+    if (element.compareTo(root.data) > 0) // If the element is larger than root, insert it at right subtree
       root.right = add(element, root.right);
-    // If the element is smaller than root, insert it at left subtree
-    else if (element.compareTo(root.data) < 0)
+    else if (element.compareTo(root.data) < 0) // If the element is smaller than root, insert it at left subtree
       root.left = add(element, root.left);
-    // If the element is equals to root, it cannot be added
-    else
+    else // If the element is equals to root, it cannot be added
       return false;
 
     nodeCount++;
@@ -203,13 +181,10 @@ public class BST<T extends Comparable<T>> implements Tree<T> {
       return node;
     }
 
-    // if larger then traverse right subtree
-    if (element.compareTo(node.data) > 0) {
+    if (element.compareTo(node.data) > 0) // if larger then traverse right subtree
       node.right = add(element, node.right);
-      // if smaller then traverse right subtree
-    } else if (element.compareTo(node.data) < 0) {
+    else if (element.compareTo(node.data) < 0) // if smaller then traverse right subtree
       node.left = add(element, node.left);
-    }
 
     // When done setting the subtree just return the node
     return node;
@@ -247,26 +222,39 @@ public class BST<T extends Comparable<T>> implements Tree<T> {
       return node;
 
     // Traverse down the tree
-    // If smaller then go to left subtree
-    if (element.compareTo(node.data) < 0)
+    if (element.compareTo(node.data) < 0) { // If smaller then go to left subtree
       node.left = remove(node.left, element);
-    // If larger then go to right subtree
-    else if (element.compareTo(node.data) > 0)
+      return node;
+    } else if (element.compareTo(node.data) > 0) { // If larger then go to right subtree
       node.right = remove(node.right, element);
-    // If is same, we found the one to remove
-    else if (element.compareTo(node.data) == 0) {
-      // Node with only one child or no child
-      if (node.left == null)
-        return node.right;
-      else if (node.right == null)
-        return node.left;
-
-      // Node with two child
-      node.data = min(node.right);
-
-      // Delete the inorder successor
-      node.right = remove(node.right, root.data);
+      return node;
     }
+
+    // If both case above doesn't match, we found the one to remove since it is
+    // equal
+
+    // Case 1: node with only one child or no child
+    if (node.left == null)
+      return node.right;
+    else if (node.right == null)
+      return node.left;
+
+    // Case 2: node with two child (we have to delete the inorder successor)
+    Node succesorParent = node;
+    Node successor = node.right;
+
+    while (successor.left != null) { // find successor
+      succesorParent = successor;
+      successor = successor.left;
+    }
+
+    // delete the inorder successor
+    if (succesorParent != node)
+      succesorParent.left = successor.right;
+    else
+      succesorParent.right = successor.right;
+
+    node.data = successor.data; // replace the root node's data with the successor's data
 
     return node;
   }
@@ -284,6 +272,8 @@ public class BST<T extends Comparable<T>> implements Tree<T> {
         return inOrderTraversal();
       case PreOrderTraversal:
         return preOrderTraversal();
+      case PostOrderTraversal:
+        return postOrderTraversal();
       default:
         return null;
     }
@@ -362,6 +352,48 @@ public class BST<T extends Comparable<T>> implements Tree<T> {
         // Right (Push the left last because it will get popped first from the stack)
         if (node.left != null)
           stack.add(node.left);
+
+        return node.data;
+      }
+    };
+  }
+
+  /**
+   * Private method to perform post-order traversal
+   * 
+   * @return an Iterator to the tree
+   */
+  private Iterator<T> postOrderTraversal() {
+    // A stack to keep track of node traversed
+    final Stack<Node> stack = new Stack<>();
+    stack.add(root);
+
+    return new Iterator<T>() {
+      Node trav = root;
+
+      @Override
+      public boolean hasNext() {
+        // If root is null means tree is invalid
+        // If stack is empty means traverse is complete
+        return root != null && !stack.isEmpty();
+      }
+
+      @Override
+      public T next() {
+        // Start at the rightmost node
+        while (trav != null && trav.right != null) {
+          stack.add(trav.right);
+          trav = trav.right;
+        }
+
+        // Pop each time the node from stack
+        Node node = stack.pop();
+
+        // Look one level down at the left
+        if (node.left != null) {
+          stack.add(node.left);
+          trav = node.left;
+        }
 
         return node.data;
       }
