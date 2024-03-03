@@ -141,7 +141,7 @@ class BitstampClient extends WebSocketClient {
                     book.cancel(order.id);
                     break;
                 case Changed:
-                    // TODO: book.modify
+                    book.amend(order.id, order.amount);
                     break;
             }
 

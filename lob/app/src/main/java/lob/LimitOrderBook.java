@@ -113,14 +113,42 @@ public class LimitOrderBook {
          * Remove an existing order from the limit level.
          * 
          * @param order - The order to be removed.
+         * @return whether the removal succeeded or not.
          */
-        public void remove(Order order) {
+        public boolean remove(Order order) {
             // NOTE: this is O(n) but can be optimised to O(1) if we store the pointers on
             // `Order` and avoid `LinkedList`.
             if (orders.remove(order)) { // only deduct count if the order indeed exists
                 --count;
                 volume -= order.size;
+                return true;
             }
+
+            return false;
+        }
+
+        /**
+         * Update an order in the list.
+         * 
+         * @param orderId - The order to be updated.
+         * @param size    - The new size for the order.
+         * @return the change in volume after the update.
+         */
+        public long update(long orderId, long size) {
+            Iterator<Order> iter = orders.iterator();
+            Order order;
+
+            while (iter.hasNext()) {
+                order = iter.next();
+                if (order.id == orderId) {
+                    long delta = size - order.size;
+                    volume += delta; // update the volume
+                    order.size = size;
+                    return delta;
+                }
+            }
+
+            return 0;
         }
 
         /**
@@ -263,7 +291,7 @@ public class LimitOrderBook {
             if (currentLimit.count > 1) // if the limit has more than one order
                 currentLimit.remove(order);
             else { // if the limit only has 1 order
-                boolean success = limits.remove(currentLimit); // remove the limit from tree
+                limits.remove(currentLimit); // remove the limit from tree
 
                 // update best limit if necessary
                 if (currentLimit == best)
@@ -276,6 +304,23 @@ public class LimitOrderBook {
             // update the last best price
             if (best != null)
                 lastBestPrice = best.price;
+        }
+
+        /**
+         * Amend an order from the tree.
+         * 
+         * @param order - The order to amend.
+         * @param size  - The new size for the order.
+         */
+        public void amend(Order order, long size) {
+            Limit limit = limits.search(new Limit(order)); // find the limit where the order resides
+            if (limit == null) {
+                System.err.println(
+                        "Failed to amend order " + order.id + ": No orders in the level " + order.price);
+                return;
+            }
+
+            volume += limit.update(order.id, size);
         }
 
         /**
@@ -353,6 +398,16 @@ public class LimitOrderBook {
 
         if (order != null)
             getTree(order.side).cancel(order); // cancel the order from the tree
+    }
+
+    public void amend(long orderId, long size) {
+        Order order = orders.get(orderId); // get the order from the map
+        if (order == null) {
+            System.err.println("amending a non-existent order " + orderId);
+            return;
+        }
+
+        getTree(order.side).amend(order, size);
     }
 
     public long best_buy() {
