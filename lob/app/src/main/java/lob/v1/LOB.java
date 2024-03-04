@@ -46,7 +46,7 @@ public class LOB implements LimitOrderBook {
     public void amend(long orderId, long size) {
         Order order = orders.get(orderId); // get the order from the map
         if (order == null) {
-            System.err.println("amending a non-existent order " + orderId);
+            // System.err.println("amending a non-existent order " + orderId);
             return;
         }
 

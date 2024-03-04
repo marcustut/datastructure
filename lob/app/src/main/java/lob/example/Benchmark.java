@@ -19,12 +19,18 @@ public class Benchmark {
         LimitOrderBook lob = new LOB();
         BufferedReader reader = new BufferedReader(new FileReader(filepath));
         ObjectMapper mapper = new ObjectMapper();
-        long processedCount = 0;
 
         String line = reader.readLine();
+        long count = 0;
+        long readDuration = 0;
+        long parseDuration = 0;
+        long start = System.nanoTime();
         while (line != null) {
             try {
+                long parseStart = System.nanoTime();
                 BitstampOrder order = Bitstamp.parseOrderMessage(mapper, line);
+                long parseEnd = System.nanoTime();
+                parseDuration += parseEnd - parseStart;
 
                 switch (order.event) {
                     case Created:
@@ -41,14 +47,24 @@ public class Benchmark {
                         break;
                 }
             } catch (Exception e) {
-                System.err.println(e);
+                if (!e.getMessage().contains("Received non-order message"))
+                    System.err.println(e);
             }
 
+            count++;
+            long readStart = System.nanoTime();
             line = reader.readLine();
-            processedCount++;
-            if (processedCount % 100000 == 0)
-                System.out.println("Procssed " + processedCount + " messages");
+            long readEnd = System.nanoTime();
+            readDuration += readEnd - readStart;
         }
+        long end = System.nanoTime();
+        long duration = end - start;
+        System.out.printf("Time used for reading %d messages: %.2fms\n", count, readDuration * 1e-6);
+        System.out.printf("Time used for parsing %d messages: %.2fms\n", count, parseDuration * 1e-6);
+        System.out.printf("Time used for processing %d orders: %.2fms\n", count,
+                (duration - readDuration - parseDuration) * 1e-6);
+        System.out.printf("Average time used for processing 1 order: %dns",
+                ((duration - readDuration - parseDuration)) / count);
 
         reader.close();
     }

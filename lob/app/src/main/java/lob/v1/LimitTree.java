@@ -73,6 +73,12 @@ public class LimitTree {
         ArrayList<Long> executedOrders = new ArrayList<>();
 
         while (best != null && order.size > 0) { // keep executing until no more levels or the order is fully filled
+            if (best.orders.size() == 0) { // find the next best
+                updateBest();
+                if (best == null || best.orders.size() == 0) // no more liquidity
+                    return executedOrders;
+            }
+
             Order matchedOrder = best.orders.getFirst(); // get the first
 
             long fillSize = Math.min(order.size, matchedOrder.size); // we can only at most fill the order size
@@ -114,8 +120,9 @@ public class LimitTree {
     public void cancel(Order order) {
         Limit currentLimit = limits.search(new Limit(order)); // get the current limit
         if (currentLimit == null) {
-            System.err.println(
-                    "Failed to cancel order " + order.id + ": No orders in the level " + order.price);
+            // System.err.println(
+            // "Failed to cancel order " + order.id + ": No orders in the level " +
+            // order.price);
             return;
         }
 
@@ -142,8 +149,9 @@ public class LimitTree {
     public void amend(Order order, long size) {
         Limit limit = limits.search(new Limit(order)); // find the limit where the order resides
         if (limit == null) {
-            System.err.println(
-                    "Failed to amend order " + order.id + ": No orders in the level " + order.price);
+            // System.err.println(
+            // "Failed to amend order " + order.id + ": No orders in the level " +
+            // order.price);
             return;
         }
 
@@ -183,6 +191,11 @@ public class LimitTree {
             return;
 
         if (limits.size() == 0) { // if limits was emptied, then there is no best limit
+            best = null;
+            return;
+        }
+
+        if (best.orders.size() == 0) { // if no more orders in the best limit then it's cleared
             best = null;
             return;
         }
