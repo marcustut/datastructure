@@ -5,27 +5,29 @@ package lob;
 
 import org.junit.jupiter.api.Test;
 
-import lob.LimitOrderBook.Side;
+import lob.common.Order;
+import lob.common.Side;
+import lob.v1.LOB;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class LimitOrderBookTest {
+class LOBv1Test {
     @Test
     void testOneLimitCancel() {
-        LimitOrderBook lob = new LimitOrderBook();
+        LimitOrderBook lob = new LOB();
 
         // initially should have no best buy / sell
         assertEquals(lob.best_buy(), 0);
         assertEquals(lob.best_sell(), 0);
 
         /* test buy order scenario */
-        lob.limit(lob.new Order(1, Side.BUY, 1, 1000)); // insert a buy order
+        lob.limit(new Order(1, Side.BUY, 1, 1000)); // insert a buy order
         assertEquals(lob.best_buy(), 1000); // now best buy should be the newly inserted order
         lob.cancel(1); // cancel the buy order
         assertEquals(lob.best_buy(), 0); // now best buy should be zero since no orders
 
         /* test sell order scenario */
-        lob.limit(lob.new Order(2, Side.SELL, 1, 1000)); // insert a sell order
+        lob.limit(new Order(2, Side.SELL, 1, 1000)); // insert a sell order
         assertEquals(lob.best_sell(), 1000); // now best sell should be the newly inserted order
         lob.cancel(2); // cancel the sell order
         assertEquals(lob.best_sell(), 0); // now best sell should be zero since no orders
@@ -33,12 +35,12 @@ class LimitOrderBookTest {
 
     @Test
     void testMultipleLimitCancel() {
-        LimitOrderBook lob = new LimitOrderBook();
+        LimitOrderBook lob = new LOB();
 
         /* test buy order scenario */
-        lob.limit(lob.new Order(1, Side.BUY, 3, 1000));
-        lob.limit(lob.new Order(2, Side.BUY, 2, 1000));
-        lob.limit(lob.new Order(3, Side.BUY, 2, 1001));
+        lob.limit(new Order(1, Side.BUY, 3, 1000));
+        lob.limit(new Order(2, Side.BUY, 2, 1000));
+        lob.limit(new Order(3, Side.BUY, 2, 1001));
 
         assertEquals(lob.best_buy(), 1001);
 
@@ -52,9 +54,9 @@ class LimitOrderBookTest {
         assertEquals(lob.best_buy(), 0);
 
         /* test sell order scenario */
-        lob.limit(lob.new Order(1, Side.SELL, 3, 1000));
-        lob.limit(lob.new Order(2, Side.SELL, 2, 1000));
-        lob.limit(lob.new Order(3, Side.SELL, 2, 999));
+        lob.limit(new Order(1, Side.SELL, 3, 1000));
+        lob.limit(new Order(2, Side.SELL, 2, 1000));
+        lob.limit(new Order(3, Side.SELL, 2, 999));
 
         assertEquals(lob.best_sell(), 999);
 
@@ -70,16 +72,16 @@ class LimitOrderBookTest {
 
     @Test
     void testMarket() {
-        LimitOrderBook lob = new LimitOrderBook();
+        LimitOrderBook lob = new LOB();
 
-        lob.limit(lob.new Order(1, Side.BUY, 3, 1000));
-        lob.limit(lob.new Order(2, Side.BUY, 2, 1000));
-        lob.limit(lob.new Order(3, Side.BUY, 2, 1001));
+        lob.limit(new Order(1, Side.BUY, 3, 1000));
+        lob.limit(new Order(2, Side.BUY, 2, 1000));
+        lob.limit(new Order(3, Side.BUY, 2, 1001));
 
         assertEquals(lob.best_buy(), 1001);
         assertEquals(lob.volume(), 7);
 
-        lob.market(lob.new Order(4, Side.SELL, 1, 0));
+        lob.market(new Order(4, Side.SELL, 1, 0));
 
         assertEquals(lob.best_buy(), 1001);
         assertEquals(lob.volume(), 6);
