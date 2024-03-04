@@ -4,4 +4,4 @@
 # Ignore Gradle build output directory
 build
 
-src/main/resources/l3_orderbook.ndjson
+app/src/main/resources/l3_orderbook.ndjson

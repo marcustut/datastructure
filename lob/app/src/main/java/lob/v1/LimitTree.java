@@ -13,8 +13,8 @@ public class LimitTree {
     // The underlying binary search tree that stores the limits.
     BST<Limit> limits = new BST<>();
 
-    // The last best price
-    long lastBestPrice = 0;
+    // The price where the last order is executed.
+    long lastPrice = 0;
 
     // The total number of active orders in this tree across all limits.
     int count = 0;
@@ -38,7 +38,6 @@ public class LimitTree {
     void clear() {
         // Create a new clean tree (the old one will be garbage collected)
         limits = new BST<>();
-        lastBestPrice = 0;
         count = 0;
         volume = 0;
     }
@@ -62,10 +61,6 @@ public class LimitTree {
 
         ++count; // update the active orders count
         volume += order.size; // update the total volume
-
-        // update the last best price
-        if (best != null)
-            lastBestPrice = best.price;
     }
 
     /**
@@ -105,6 +100,7 @@ public class LimitTree {
             best.count--; // update the limit count
             count--; // update the total count
             volume -= fillSize; // deduct the filled size from total volume
+            lastPrice = best.price; // update the last executed price
         }
 
         return executedOrders;
@@ -135,10 +131,6 @@ public class LimitTree {
 
         --count; // update the active orders count
         volume -= order.size; // update the total volume
-
-        // update the last best price
-        if (best != null)
-            lastBestPrice = best.price;
     }
 
     /**

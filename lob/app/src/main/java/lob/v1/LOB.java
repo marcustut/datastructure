@@ -54,14 +54,14 @@ public class LOB implements LimitOrderBook {
     }
 
     @Override
-    public long best_buy() {
+    public long bestBuy() {
         if (buy.best == null)
             return 0;
         return buy.best.price;
     }
 
     @Override
-    public long best_sell() {
+    public long bestSell() {
         if (sell.best == null)
             return 0;
         return sell.best.price;
@@ -70,6 +70,27 @@ public class LOB implements LimitOrderBook {
     @Override
     public long volume() {
         return buy.volume + sell.volume;
+    }
+
+    @Override
+    public Iterator<Limit> topN(int n, Side side) {
+        final Iterator<Limit> iter = getTree(side).limits
+                .traverse(side == Side.BUY ? TraversalOrder.PostOrderTraversal : TraversalOrder.InOrderTraversal);
+
+        return new Iterator<Limit>() {
+            int count = 0;
+
+            @Override
+            public boolean hasNext() {
+                return count < n && iter.hasNext();
+            }
+
+            @Override
+            public Limit next() {
+                count++;
+                return iter.next();
+            }
+        };
     }
 
     private LimitTree getTree(Side side) {

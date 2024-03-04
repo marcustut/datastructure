@@ -17,20 +17,20 @@ class LOBv1Test {
         LimitOrderBook lob = new LOB();
 
         // initially should have no best buy / sell
-        assertEquals(lob.best_buy(), 0);
-        assertEquals(lob.best_sell(), 0);
+        assertEquals(lob.bestBuy(), 0);
+        assertEquals(lob.bestSell(), 0);
 
         /* test buy order scenario */
         lob.limit(new Order(1, Side.BUY, 1, 1000)); // insert a buy order
-        assertEquals(lob.best_buy(), 1000); // now best buy should be the newly inserted order
+        assertEquals(lob.bestBuy(), 1000); // now best buy should be the newly inserted order
         lob.cancel(1); // cancel the buy order
-        assertEquals(lob.best_buy(), 0); // now best buy should be zero since no orders
+        assertEquals(lob.bestBuy(), 0); // now best buy should be zero since no orders
 
         /* test sell order scenario */
         lob.limit(new Order(2, Side.SELL, 1, 1000)); // insert a sell order
-        assertEquals(lob.best_sell(), 1000); // now best sell should be the newly inserted order
+        assertEquals(lob.bestSell(), 1000); // now best sell should be the newly inserted order
         lob.cancel(2); // cancel the sell order
-        assertEquals(lob.best_sell(), 0); // now best sell should be zero since no orders
+        assertEquals(lob.bestSell(), 0); // now best sell should be zero since no orders
     }
 
     @Test
@@ -42,32 +42,32 @@ class LOBv1Test {
         lob.limit(new Order(2, Side.BUY, 2, 1000));
         lob.limit(new Order(3, Side.BUY, 2, 1001));
 
-        assertEquals(lob.best_buy(), 1001);
+        assertEquals(lob.bestBuy(), 1001);
 
         lob.cancel(3);
 
-        assertEquals(lob.best_buy(), 1000);
+        assertEquals(lob.bestBuy(), 1000);
 
         lob.cancel(2);
         lob.cancel(1);
 
-        assertEquals(lob.best_buy(), 0);
+        assertEquals(lob.bestBuy(), 0);
 
         /* test sell order scenario */
         lob.limit(new Order(1, Side.SELL, 3, 1000));
         lob.limit(new Order(2, Side.SELL, 2, 1000));
         lob.limit(new Order(3, Side.SELL, 2, 999));
 
-        assertEquals(lob.best_sell(), 999);
+        assertEquals(lob.bestSell(), 999);
 
         lob.cancel(3);
 
-        assertEquals(lob.best_sell(), 1000);
+        assertEquals(lob.bestSell(), 1000);
 
         lob.cancel(2);
         lob.cancel(1);
 
-        assertEquals(lob.best_sell(), 0);
+        assertEquals(lob.bestSell(), 0);
     }
 
     @Test
@@ -78,12 +78,12 @@ class LOBv1Test {
         lob.limit(new Order(2, Side.BUY, 2, 1000));
         lob.limit(new Order(3, Side.BUY, 2, 1001));
 
-        assertEquals(lob.best_buy(), 1001);
+        assertEquals(lob.bestBuy(), 1001);
         assertEquals(lob.volume(), 7);
 
         lob.market(new Order(4, Side.SELL, 1, 0));
 
-        assertEquals(lob.best_buy(), 1001);
+        assertEquals(lob.bestBuy(), 1001);
         assertEquals(lob.volume(), 6);
     }
 }

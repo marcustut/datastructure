@@ -1,6 +1,10 @@
 package lob;
 
+import java.util.Iterator;
+
 import lob.common.Order;
+import lob.common.Side;
+import lob.v1.Limit;
 
 public interface LimitOrderBook {
     public void limit(Order order);
@@ -11,9 +15,11 @@ public interface LimitOrderBook {
 
     public void amend(long orderId, long size);
 
-    public long best_buy();
+    public long bestBuy();
 
-    public long best_sell();
+    public long bestSell();
 
     public long volume();
+
+    public Iterator<Limit> topN(int n, Side side);
 }
