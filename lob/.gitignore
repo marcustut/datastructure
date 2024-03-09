@@ -4,4 +4,7 @@
 # Ignore Gradle build output directory
 build
 
+# Ignore the dataset
 app/src/main/resources/l3_orderbook.ndjson
+
+*.pdf

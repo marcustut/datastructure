@@ -44,6 +44,10 @@ This example comes with a simple GUI written with [JavaFX](https://openjfx.io/in
 ./gradlew.bat run -Plaunch=lob.example.Visualiser
 ```
 
+Once the visualiser is opened, you should see a window as follows:
+
+![visualiser](images/visualiser.png)
+
 ### Benchmark
 
 This example reads 1 million messages which was previously downloaded and feed them into the limit order book and measure how long it takes.

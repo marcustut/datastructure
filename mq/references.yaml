@@ -1,0 +1,66 @@
+internet_history:
+  type: Article
+  author:
+    - Barry M. Leiner
+    - Vinton G. Cerf
+    - David D. Clark
+    - Robert E. Kahn
+    - Leonard Kleinrock
+    - Daniel C. Lynch
+    - Jon Postel
+    - Lawrence G. Roberts
+    - Stephen S. Wolff
+  title:
+    value: "The past and future history of the Internet"
+    verbatim: true
+  date: 1997-02-01
+  page-range: 102-108
+
+producer_consumer_paradigm:
+  type: Article
+  author:
+    - Kevin Jeffay
+  title:
+    value: "The real-time producer/consumer paradigm: A paradigm for the construction of efficient, predictable real-time systems"
+    verbatim: true
+  date: 1993-03-01
+  page-range: 796-804
+
+microservices:
+  type: Article
+  author:
+    - Johannes Thönes
+  title:
+    value: "Microservices"
+    verbatim: true
+  date: 2015-01-01
+  page-range: 116-116
+  serial-number:
+    doi: 10.1109/MS.2015.11
+
+cache_locality:
+  type: Article
+  author:
+    - Dirk Grunwald
+    - Benjamin Zorn
+    - Robert Henderson
+  title:
+    value: "Improving the cache locality of memory allocation"
+    verbatim: true
+  date: 1993-06-01
+  page-range: 177-186
+  serial-number:
+    doi: 10.1145/155090.155107
+
+huge_pages:
+  type: Article
+  author:
+    - Dirk Grunwald
+    - Benjamin Zorn
+    - Robert Henderson
+  title:
+    value: "Making Huge Pages Actually Useful"
+    verbatim: true
+  date: 2018-01-01
+  serial-number:
+    doi: 10.1145/3173162.3173203
