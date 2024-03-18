@@ -10,12 +10,12 @@ import lob.exchange.Bitstamp;
 import lob.exchange.BitstampOrder;
 
 class BenchmarkResult {
-    long readDuration, parseDuration, orderDuration, count;
+    long readDuration, parseDuration, opDuration, count;
 
-    public BenchmarkResult(long readDuration, long parseDuration, long orderDuration, long count) {
+    public BenchmarkResult(long readDuration, long parseDuration, long opDuration, long count) {
         this.readDuration = readDuration;
         this.parseDuration = parseDuration;
-        this.orderDuration = orderDuration;
+        this.opDuration = opDuration;
         this.count = count;
     }
 }
@@ -29,10 +29,10 @@ public class Benchmark {
     public static void main(String[] args) throws IOException {
         PrintWriter writer = new PrintWriter(new FileWriter(benchmarkFilepath));
 
-        writer.println("readDuration,parseDuration,orderDuration,count");
+        writer.println("readDuration,parseDuration,opDuration,count");
         for (int i = 0; i < 10; i++) {
             BenchmarkResult result = benchmark();
-            writer.printf("%d,%d,%d,%d\n", result.readDuration, result.parseDuration, result.orderDuration,
+            writer.printf("%d,%d,%d,%d\n", result.readDuration, result.parseDuration, result.opDuration,
                     result.count);
         }
 
@@ -48,7 +48,7 @@ public class Benchmark {
         long count = 0;
         long readDuration = 0;
         long parseDuration = 0;
-        long start = System.nanoTime();
+        long opDuration = 0;
         while (line != null) {
             try {
                 long parseStart = System.nanoTime();
@@ -56,6 +56,7 @@ public class Benchmark {
                 long parseEnd = System.nanoTime();
                 parseDuration += parseEnd - parseStart;
 
+                long opStart = System.nanoTime();
                 switch (order.event) {
                     case Created:
                         if (order.price == 0) // if the price is 0 then it is a market order
@@ -70,6 +71,8 @@ public class Benchmark {
                         lob.amend(order.id, order.amount);
                         break;
                 }
+                long opEnd = System.nanoTime();
+                opDuration += opEnd - opStart;
             } catch (Exception e) {
                 if (!e.getMessage().contains("Received non-order message"))
                     System.err.println(e);
@@ -81,17 +84,13 @@ public class Benchmark {
             long readEnd = System.nanoTime();
             readDuration += readEnd - readStart;
         }
-        long end = System.nanoTime();
-        long duration = end - start;
         System.out.printf("Time used for reading %d messages: %.2fms\n", count, readDuration * 1e-6);
         System.out.printf("Time used for parsing %d messages: %.2fms\n", count, parseDuration * 1e-6);
-        System.out.printf("Time used for processing %d orders: %.2fms\n", count,
-                (duration - readDuration - parseDuration) * 1e-6);
-        System.out.printf("Average time used for processing 1 order: %dns\n",
-                ((duration - readDuration - parseDuration)) / count);
+        System.out.printf("Time used for processing %d orders: %.2fms\n", count, opDuration * 1e-6);
+        System.out.printf("Average time used for processing 1 order: %dns\n", opDuration / count);
 
         reader.close();
 
-        return new BenchmarkResult(readDuration, parseDuration, duration - readDuration - parseDuration, count);
+        return new BenchmarkResult(readDuration, parseDuration, opDuration, count);
     }
 }

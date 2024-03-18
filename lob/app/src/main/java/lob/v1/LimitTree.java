@@ -1,7 +1,6 @@
 package lob.v1;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import lob.common.Order;
 import lob.common.Side;
@@ -29,9 +28,6 @@ public class LimitTree {
     // Indicate whether this is a buy tree or a sell tree.
     Side side;
 
-    // A hash map for fast access to limit using their price
-    HashMap<Long, Limit> limitMap = new HashMap<>();
-
     public LimitTree(Side side) {
         this.side = side;
     }
@@ -53,9 +49,7 @@ public class LimitTree {
      * @param order - The order to be placed.
      */
     public void limit(Order order) {
-        Limit currentLimit = limitMap.get(order.price); // get the current limit
-        // Limit currentLimit = limits.search(new Limit(order)); // get the current
-        // limit
+        Limit currentLimit = limits.search(new Limit(order)); // get the current limit
 
         if (currentLimit != null) // if the tree contains the price limit
             currentLimit.add(order); // add the order onto the existing limit
@@ -63,7 +57,6 @@ public class LimitTree {
             Limit limit = new Limit(order); // create a new limit
             updateBest(limit); // update the best price limit
             limits.add(limit); // insert the limit onto the tree
-            limitMap.put(order.price, limit); // insert the limit onto the map
         }
 
         ++count; // update the active orders count
@@ -96,7 +89,6 @@ public class LimitTree {
 
             if (matchedOrder.size == 0 && best.count == 1) { // order is fully filled and the limit has no orders
                 limits.remove(best); // remove the limit
-                limitMap.remove(best.price); // remove the limit
                 updateBest(); // look for next best limit
                 count--; // update the total count
                 volume -= fillSize; // deduct filled size from total volume
@@ -126,9 +118,7 @@ public class LimitTree {
      * @param order - The order to cancel
      */
     public void cancel(Order order) {
-        Limit currentLimit = limitMap.get(order.price); // get the current limit
-        // Limit currentLimit = limits.search(new Limit(order)); // get the current
-        // limit
+        Limit currentLimit = limits.search(new Limit(order)); // get the current limit
         if (currentLimit == null) {
             // System.err.println(
             // "Failed to cancel order " + order.id + ": No orders in the level " +
@@ -140,7 +130,6 @@ public class LimitTree {
             currentLimit.remove(order);
         else { // if the limit only has 1 order
             limits.remove(currentLimit); // remove the limit from tree
-            limitMap.remove(currentLimit.price); // remove the limit from map
 
             // update best limit if necessary
             if (currentLimit == best)
@@ -158,9 +147,7 @@ public class LimitTree {
      * @param size  - The new size for the order.
      */
     public void amend(Order order, long size) {
-        Limit limit = limitMap.get(order.price); // find the limit where the order resides
-        // Limit limit = limits.search(new Limit(order)); // find the limit where the
-        // order resides
+        Limit limit = limits.search(new Limit(order)); // find the limit where the order resides
         if (limit == null) {
             // System.err.println(
             // "Failed to amend order " + order.id + ": No orders in the level " +
