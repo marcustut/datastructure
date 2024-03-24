@@ -41,11 +41,13 @@ public class HuffmanTest {
 
     @Test
     void decodeSimpleString() {
-        simpleTestCases.forEach(tc -> assertEquals(Huffman.decode(Huffman.encode(tc.payload)), tc.payload));
+        simpleTestCases.forEach(tc -> assertEquals(
+                Huffman.decode(Huffman.encode(tc.payload).root, Huffman.encode(tc.payload).encoded), tc.payload));
     }
 
     @Test
     void decodeSymbolString() {
-        symbolTestCases.forEach(tc -> assertEquals(Huffman.decode(Huffman.encode(tc.payload)), tc.payload));
+        symbolTestCases.forEach(tc -> assertEquals(
+                Huffman.decode(Huffman.encode(tc.payload).root, Huffman.encode(tc.payload).encoded), tc.payload));
     }
 }
