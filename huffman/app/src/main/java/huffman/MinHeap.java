@@ -1,5 +1,8 @@
 package huffman;
 
+/**
+ * A generic heap data structure.
+ */
 public class MinHeap<T extends Comparable<T>> {
     private static final int DEFAULT_CAPACITY = 11;
     private Object[] heap;
@@ -10,6 +13,11 @@ public class MinHeap<T extends Comparable<T>> {
         heap = new Object[DEFAULT_CAPACITY];
     }
 
+    /**
+     * Add a new element onto the heap.
+     * 
+     * @param data - the element to add
+     */
     @SuppressWarnings("unchecked")
     public void add(T data) {
         if (data == null) // if the data given is null throw exception
@@ -39,6 +47,11 @@ public class MinHeap<T extends Comparable<T>> {
         size++; // increment the size
     }
 
+    /**
+     * Removes the front element of the heap and return it.
+     * 
+     * @return the removed front element
+     */
     @SuppressWarnings("unchecked")
     public T poll() {
         T min = (T) heap[0];
@@ -78,6 +91,11 @@ public class MinHeap<T extends Comparable<T>> {
         return min;
     }
 
+    /**
+     * The current size of the heap.
+     * 
+     * @return an integer denoting the size of the heap
+     */
     public int size() {
         return size;
     }

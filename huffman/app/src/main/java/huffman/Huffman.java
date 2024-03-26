@@ -7,58 +7,41 @@ import java.util.stream.Collectors;
 import huffman.Huffman;
 
 public class Huffman {
-    public static final int MAX_DEPTH = 32; // because we use Integer to represent the code (Integer is 32-bit)
-
-    private static class Code {
-        static final int DIGITS = 6;
-        int code;
-        int numBits;
-
-        Code(int code) {
-            this.code = code;
-        }
-
-        Code(int code, int numBits) {
-            this.code = code;
-            this.numBits = numBits;
-        }
-
-        public static Code fromString(String str) {
-            if (str.length() != DIGITS)
-                System.err.println("wrong digits for Code");
-
-            return new Code(
-                    Integer.parseInt(str.substring(0, 4), 16),
-                    Integer.parseInt(str.substring(DIGITS - 2, DIGITS), 16));
-        }
-
-        public String path() {
-            return Integer.toBinaryString((1 << numBits) | code).substring(1);
-        }
-
-        @Override
-        public String toString() {
-            return String.format("%1$04X", code) + String.format("%1$02X", numBits);
-        }
-    }
-
+    /**
+     * Encoded is a wrapper class to represent the result of `Huffman.encode`.
+     */
     public static class Encoded {
-        public String encoded;
-        public HashMap<Character, Code> codes;
+        public byte[] encoded;
+        public HashMap<Character, String> codes;
         public Node root;
 
-        public Encoded(String encoded, HashMap<Character, Code> codes, Node root) {
+        public Encoded(byte[] encoded, HashMap<Character, String> codes, Node root) {
             this.encoded = encoded;
             this.codes = codes;
             this.root = root;
         }
 
+        private String formatEncoded() {
+            String s = "[";
+            for (byte b : encoded)
+                s += Integer.toBinaryString(b & 0xFF) + " ";
+            return s.substring(0, s.length() - 1) + "]";
+        }
+
         @Override
         public String toString() {
-            return "{encoded=" + encoded + ", codes=" + codes + "}";
+            return "{encoded=" + this.formatEncoded() + ", codes=" + codes + "}";
         }
     }
 
+    /**
+     * Node represents the node in a Huffman tree.
+     * 
+     * `Comparable` - allows to compare two different node and determine which is
+     * larger / smaller.
+     * `PrintableNode` - allows the tree to be printed using
+     * `BinaryTreePrinter.print()`.
+     */
     public static class Node implements Comparable<Node>, BinaryTreePrinter.PrintableNode {
         int freq;
         char c;
@@ -77,6 +60,11 @@ public class Huffman {
             this.freq = freq;
         }
 
+        /**
+         * Find the depth of the tree.
+         * 
+         * @return an integer denoting the depth.
+         */
         public int depth() {
             // Leaf node has a depth of 1
             if (left == null && right == null)
@@ -120,6 +108,12 @@ public class Huffman {
 
     }
 
+    /**
+     * Encode the payload using Huffman Code.
+     * 
+     * @param payload - the payload string
+     * @return the result of encoding in a wrapper class `Encoded`.
+     */
     public static Encoded encode(String payload) {
         // Construct a frequency map of individual character
         HashMap<Character, Integer> freqMap = new HashMap<>();
@@ -129,52 +123,148 @@ public class Huffman {
         // Build a huffman tree from the frequencies
         Node root = buildTree(freqMap);
 
-        // Print to STDERR if exceeds maximum depth
-        if (root.depth() > MAX_DEPTH)
-            System.err.printf(
-                    "Huffman Tree has a depth of %d which exceeds the maximum of %d, expect the encoded data to be wrong\n",
-                    root.depth(), MAX_DEPTH);
-
         // Traverse the tree to get the codes
-        HashMap<Character, Code> codes = getCodesFromTree(root);
+        HashMap<Character, String> codes = getCodesFromTree(root);
 
         // Encode the payload with codes
-        String encoded = "";
-        for (int i = 0; i < payload.length(); i++)
-            encoded += codes.get(payload.charAt(i));
+        ArrayList<Byte> bytes = new ArrayList<Byte>();
+        byte _byte = 0;
+        int biti = 7;
 
-        return new Encoded(encoded, codes, root);
+        // Iterate through each character of the payload, get its corresponding code
+        // and convert them into actual bytes
+        for (char c : payload.toCharArray()) {
+            String path = codes.get(c);
+
+            for (int i = 0; i < path.length(); i++) {
+                if (biti < 0) { // push and reset once we finished writing 8 bits
+                    bytes.add(_byte);
+                    _byte = 0;
+                    biti = 7;
+                }
+
+                int turn = path.charAt(i) - '0'; // convert char from ascii to integer
+
+                _byte |= turn << biti;
+                biti--;
+            }
+        }
+
+        /**
+         * Use the last two bytes to indicate EOF.
+         * For example, the last remaining byte is 10110110 and biti = 0
+         * 
+         * <pre>
+         *   Before adding the size:
+         *     lastByte1 = 10110000 
+         *     lastByte2 = 01100000
+         * 
+         *   After adding the size:
+         *     lastByte1 = 10110100 (size of 4 = min(4, 7 - 0)) 
+         *     lastByte2 = 01100011 (size of 3 = max(0, 7 - 0 - 4))
+         * </pre>
+         */
+
+        // Use two last byte to indicate EOF
+        byte lastByte1 = (byte) (_byte & 0b11110000); // take the first 4 bits and make it the second last
+        byte lastByte2 = (byte) ((_byte & 0b00001111) << 4); // take the last 4 bits and shift to front
+
+        // Add the size to read at last 3 bits
+        lastByte1 |= Math.min(7 - biti, 4);
+        lastByte2 |= Math.max(7 - biti - 4, 0);
+
+        bytes.add(lastByte1);
+        bytes.add(lastByte2);
+
+        // Convert to Java's primitive byte[] array
+        byte[] primitiveBytes = new byte[bytes.size()];
+        for (int i = 0; i < bytes.size(); i++)
+            primitiveBytes[i] = bytes.get(i).byteValue();
+
+        return new Encoded(primitiveBytes, codes, root);
     }
 
-    public static String decode(Huffman.Node root, String encoded) {
-        if (encoded.length() % Code.DIGITS != 0)
-            System.err.printf("The size of the encoded string is not valid (must be a multiple of %d)\n", Code.DIGITS);
-
+    /**
+     * Decode a previously encoded payload given the Huffman tree used.
+     * 
+     * @param root    - The root node of the Huffman tree.
+     * @param encoded - The encoded raw bytes.
+     * @return a decoded string of the payload
+     */
+    public static String decode(Huffman.Node root, byte[] encoded) {
         String decoded = "";
         Node curr = root;
-        Code[] codes = new Code[encoded.length() / Code.DIGITS];
 
-        // Parse the decoded string into codes
-        for (int i = 0; i < encoded.length(); i += Code.DIGITS)
-            codes[i / Code.DIGITS] = Code.fromString(encoded.substring(i, i + Code.DIGITS));
-
-        // Go through the codes and follow the path in the tree
-        for (Code code : codes) {
-            // Traverse the path
-            for (char c : code.path().toCharArray())
-                if (c == '0') // if it is '0' then go left
-                    curr = curr.left;
-                else // else it is a '1', go right
+        /**
+         * For each byte, we test it bit by bit and traverse the tree.
+         * Note that we always compare the most significant bit (MSB),
+         * hence why we do an "AND" mask for the first bit.
+         * 
+         * For example, to iterate byte -> 01001101
+         * 
+         * <pre>
+         *   i = 7:
+         *      b = 01001101
+         *      b & 0b10000000 = 01001101 & 1000000 = 0 (go left)
+         *   i = 6:
+         *      b = 10011010
+         *      b & 0b10000000 = 10011010 & 1000000 = 128 (go right)
+         *   i = 5:
+         *      b = 00110100
+         *      b & 0b10000000 = 00110100 & 1000000 = 0 (go left)
+         *   ...
+         * </pre>
+         */
+        for (int i = 0; i < encoded.length - 2; i++) {
+            byte b = encoded[i];
+            int biti = 7;
+            while (biti >= 0) {
+                if ((b & 0b10000000) > 0) // if bit is set, go right
                     curr = curr.right;
+                else // go left
+                    curr = curr.left;
 
-            // Get character from the current path and reset
-            decoded += curr.c;
-            curr = root;
+                if (curr.left == null & curr.right == null) { // arriving at leaf node
+                    decoded += curr.c; // add the character found
+                    curr = root; // reset and start again
+                }
+
+                b <<= 1;
+                biti--;
+            }
+        }
+
+        // Handle the last two bytes (EOF)
+        for (int i = encoded.length - 2; i < encoded.length; i++) {
+            byte b = encoded[i];
+            int nbits = b & 0b00000111; // take the last 3 bits as size
+
+            // Traverse the bits
+            while (nbits > 0) {
+                if ((b & 0b10000000) > 0)
+                    curr = curr.right;
+                else
+                    curr = curr.left;
+
+                if (curr.left == null && curr.right == null) {
+                    decoded += curr.c;
+                    curr = root;
+                }
+
+                b <<= 1;
+                nbits--;
+            }
         }
 
         return decoded;
     }
 
+    /**
+     * Serialize a given Huffman tree so that it can be stored elsewhere.
+     * 
+     * @param root - The root node of the Huffman tree.
+     * @return a string which contains the serialized tree.
+     */
     public static String serializeTree(Huffman.Node root) {
         if (root == null)
             throw new NullPointerException();
@@ -187,15 +277,24 @@ public class Huffman {
             serialized += "1" + (root.c == '\n' ? (char) 0 : root.c);
         else // aggregated node, write 0 then continue traversing
             serialized += "0" + serializeTree(root.left, serialized) + serializeTree(root.right, serialized);
+
         return serialized;
     }
 
+    /**
+     * Deserialize a serialized tree from the given string.
+     * 
+     * @param serialized - The serialized tree in string.
+     * @return the root node of the tree.
+     */
     public static Huffman.Node deserializeTree(String serialized) {
         if (serialized == null)
             throw new NullPointerException();
 
+        // Collect the serialized string into aray of characters
         ArrayList<Character> bits = new ArrayList<>(
                 serialized.chars().mapToObj(e -> (char) e).collect(Collectors.toList()));
+
         return deserializeTreeHelper(bits);
     }
 
@@ -241,13 +340,13 @@ public class Huffman {
         return heap.poll();
     }
 
-    private static HashMap<Character, Code> getCodesFromTree(Node root) {
-        HashMap<Character, Code> codes = new HashMap<>();
-        getCodesFromTree(root, codes, new Code(0));
+    private static HashMap<Character, String> getCodesFromTree(Node root) {
+        HashMap<Character, String> codes = new HashMap<>();
+        getCodesFromTree(root, codes, new String(""));
         return codes;
     }
 
-    private static void getCodesFromTree(Node root, HashMap<Character, Code> codes, Code code) {
+    private static void getCodesFromTree(Node root, HashMap<Character, String> codes, String code) {
         // Base case: arrive at leaf node (is a character node)
         if (root.left == null && root.right == null) {
             codes.put(root.c, code);
@@ -255,9 +354,9 @@ public class Huffman {
         }
 
         // Traverse left subtree
-        getCodesFromTree(root.left, codes, new Code((code.code << 1) | 0, code.numBits + 1));
+        getCodesFromTree(root.left, codes, code + "0");
 
         // Traverse right subtree
-        getCodesFromTree(root.right, codes, new Code((code.code << 1) | 1, code.numBits + 1));
+        getCodesFromTree(root.right, codes, code + "1");
     }
 }

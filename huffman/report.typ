@@ -96,6 +96,10 @@ For example the message *"yippy ya"* would result in a huffman tree as follows:
 
 Note that in the message, there are five distinct characters and these characters correspond to the five leaf nodes in the tree, *y*, *i*, *space*, *p* and *a*. When traversing the tree, every turn to the left adds a '0' to the path and adds a '1' to the path when turning to the right. Therefore, for the character *y*, its path is just *0* since its only takes one turn to the left and arrived at the leaf node, for the character *i*, the path is *100*, the same idea applies for the other characters.
 
+First, we have to construct this tree from the original message using a greedy algorithm, the algorithm is as follows:
+
+1. 
+
 = Design decisions
 
 The main operations for an order book are listed below:
