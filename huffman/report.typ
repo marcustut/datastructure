@@ -11,13 +11,13 @@
 )
 
 #align(center)[
-  #text(fill: blue, size: 9pt)[#underline(link("https://youtu.be/KmnG6tFzjKo")[🔗 Video Link])]
+  #text(fill: blue, size: 9pt)[#underline(link("https://youtu.be/Tw7ODIysiX4")[🔗 Video Link])]
   #h(0.2em)
   #text(fill: blue, size: 9pt)[#underline(link("https://github.com/marcustut/datastructure/tree/main/huffman")[🔗 GitHub Link])]
 ]
 
 #pad(x: 12pt, [
-  *Abstract* - The evolution of financial markets has been marked by the transition from traditional open outcry trading to electronic systems, emphasizing efficiency and speed. Central to modern electronic trading systems is the order book, a dynamic data structure managing buy and sell orders. In this paper, we present an in-depth exploration of the design, implementation, and performance analysis of an efficient limit order book for electronic trading systems. Our design decisions focus on using binary search trees and queues to maintain sorted order and facilitate fast order processing. Through comprehensive testing and benchmarking, we demonstrate the scalability and performance of our order book implementation. Real-world examples, including a live visualizer and a benchmarking tool, showcase the practical applications and performance characteristics of our system. Benchmark results indicate that our order book achieves remarkable throughput and latency, close to industry standards. Our work contributes a reliable and efficient solution for managing order flow in electronic trading systems, offering insights into the principles and practices of high-performance financial software engineering.
+  *Abstract* - This document explores the implementation and implications of Huffman coding, a widely used data compression algorithm. Beginning with an overview of early computing limitations and the need for efficient storage techniques, it delves into the fundamentals of Huffman encoding, highlighting its role in reducing data size by exploiting character frequency patterns. The process of constructing Huffman trees and encoding messages is detailed, showcasing the algorithm's ability to achieve significant compression compared to ASCII encoding. Key design decisions, including tree serialization, byte array encoding, and handling end-of-file scenarios, are elucidated for effective implementation. Test cases and examples demonstrate the functionality and efficacy of the Huffman coding implementation. Through this exploration, valuable insights into information theory and bitwise operations are gained, culminating in a comprehensive understanding of Huffman coding's principles and applications.
 ])
 
 = Background
@@ -28,7 +28,7 @@ Back then in the early ages of computing resources are limited, for example the 
 
 == Message Encoding
 
-Assuming that we are only dealing with ASCII characters, each character maps to 1 byte so for the message *"yippy ya"*, it would need $8 times 8" bits" = 64 "bits"$ in total. The table below shows the mapping of each character to their corresponding ASCII values.
+Assuming that we are only dealing with ASCII characters, each character maps to 1 byte so for the message *"yippy ya ya"*, it would need $11 times 8" bits" = 88 "bits"$ in total. The table below shows the mapping of each character to their corresponding ASCII values.
 
 #figure(
   table(
@@ -43,13 +43,13 @@ Assuming that we are only dealing with ASCII characters, each character maps to 
     [a], [97], [01100001],
     [space], [32], [00100000],
   ),
-  caption: [ASCII Table for the message "yippy ya"]
-) <ascii_yippy_ya>
+  caption: [ASCII Table for the message "yippy ya ya"]
+) <ascii_yippy_ya_ya>
 
-Using @ascii_yippy_ya above, the message encoded using ASCII would be 
+Using @ascii_yippy_ya_ya above, the message encoded using ASCII would be 
 
-#rect(fill: silver, stroke: 1pt, width: 100%, height: 2em, inset: 6.5pt)[
-  #text(font: "CMU Typewriter Text", size: 10pt, weight: "bold")[01111001 01111001 01110000 01110000 01111001 01111001 01111001 01111001]
+#rect(fill: silver, stroke: 1pt, width: 100%, height: 3.4em, inset: 6.5pt)[
+  #text(font: "CMU Typewriter Text", size: 10pt, weight: "bold")[01111001 01111001 01110000 01110000 01111001 01111001 01111001 01111001 00100000 01111001 01100001]
 ]
 
 However do we really need that many bits? With huffman encoding, it leverages the frequency information of individual character in the message to devise a more compact encoding scheme. For example, the same message would use the following scheme:
@@ -73,16 +73,16 @@ However do we really need that many bits? With huffman encoding, it leverages th
 Using @huffman_yippy_ya_ya above, the encoded message would be 
 
 #rect(fill: silver, stroke: 1pt, width: 100%, height: 2em, inset: 6.5pt)[
-  #text(font: "CMU Typewriter Text", size: 10pt, weight: "bold")[0 100 110 110 0 101 0 111]
+  #text(font: "CMU Typewriter Text", size: 10pt, weight: "bold")[0 100 110 110 0 101 0 111 0 111]
 ]
 
-which only uses 18 bits, comparing this to the ASCII version, it achieved a 28% compression. However, most operating systems's file system work with byte as the smallest unit hence we need to pad extra zeroes at the end for the message making it to use 24 bits. That said, it is still a big improvement from only using ASCII.
+which only uses 22 bits, comparing this to the ASCII version, it achieved a 75% compression. However, most operating systems's file system work with byte as the smallest unit hence we need to pad extra zeroes at the end for the message making it to use 24 bits. That said, it is still a big improvement from only using ASCII.
 
 == Constructing the Huffman Table
 
 The major difference between Huffman encoding and ASCII encoding is that ASCII has a fixed table mapping each character to a bit pattern but Huffman encoding does not, it requires some processing to generate this table. The approach that Huffman took is to construct a binary tree that we can traverse to find the character and the path it took is the code for that particular character. Such trees are called _Huffman Trees_.
 
-For example the message *"yippy ya"* would result in a huffman tree as follows:
+For example the message *"yippy ya ya"* would result in a huffman tree as follows:
 
 ```
                      0                       {=11}             1                                     
@@ -98,197 +98,115 @@ Note that in the message, there are five distinct characters and these character
 
 First, we have to construct this tree from the original message using a greedy algorithm, the algorithm is as follows:
 
-1. 
+1. Run through the message character by character and record the frequency of each character in a map.
+2. Convert all these character-frequency pairing into nodes and store them in a min-heap.
+3. Poll the heap twice to get the minimum and next minimum node
+4. Aggregate these two nodes into one by taking the sum of their frequencies, the character does not matter.
+5. Add the aggregated node back into the heap.
+6. Repeat step 3 - 5 until there is only one node left in the heap.
+7. The root node of the tree is the remaining node in the heap.
+
+The algorithm described above has been implemented in the `buildTree` method of the `Huffman` class. 
+
+== Decoding using the Huffman Tree
+
+During the decode process, the tree that was used to encode the original message will also be needed in order to decode the encoded message. The idea is very simple, if we have a tree such as the one depicted above, then the encoded message represents the path to take in the tree. The decoding algorithm starts at the root and if the current bit is `0` then traverse the left subtree and if `0`, traverse the right subtree, until we arrive a leaf node where we get the first decoded character, then we start from root node again and keep doing this until the end of the message.
 
 = Design decisions
 
-The main operations for an order book are listed below:
+== Classes overview
 
-- *Limit* - Add a new order onto the book at a specfied limit price.
-- *Cancel* - Cancel an existing order from the book.
-- *Market* - Match orders from the book (remove existing orders).
-- *Amend* - Update the quantity of a particular order.
-- *Get Best Bid/Ask* - Get the current best bid or best ask.
-- *Get Volume* - Get the current volume.
-- *Top N* - Get the top N limits in the book.
+The classes in the project are outlined as follows:
 
-To make the code more maintainable and extensible, I have created an interface `LimitOrderBook` which contains the methods mentioned above.
+- *Huffman* - implements the core operations and algorithm described above.
+  - `encode` 
+  - `decode`
+  - `serializeTree`
+  - `deserializeTree`
+- *HuffmanFile* - a wrapper for `Huffman` to deal with files.
+  - `compress`
+  - `decompress`
+- *MinHeap* - the data structure used by `Huffman` to construct the Huffman Tree.
+  - `add`
+  - `poll`
+  - `size`
 
-```java
-public interface LimitOrderBook {
-    public void limit(Order order);
-    public void market(Order order);
-    public void cancel(long orderId);
-    public void amend(long orderId, long size);
-    public long bestBuy();
-    public long bestSell();
-    public long volume();
-    public Iterator<Limit> topN(int n, Side side);
-}
+== Tree Serialization and Deserialization
+
+The `serializeTree` and `deserializeTree` method here are used to transform the Huffman Tree into string and back to a tree from string. This is essential since the tree is required for the decoding process hence in the `compress` method of `HuffmanFile` we store the serialized tree together with the encoded message. Similarly, the `decompress` method of `HuffmanFile` will read the compressed file and deserialize the file header as a Huffman Tree in order to use it for decoding.
+
+To give an illustration of the serialization and deserialization process, let's serialize the following tree as a string:
+
+```
+                     0                       {=11}             1                                     
+                    ┌───────────────────┴───────────┐                   
+                  {y=4}                             0         {=7}          1
+                                                    ┌─────────┴───────┐         
+                                             0    {=3}    1           0    {=4}   1      
+                                             ┌────┴────┐         ┌────┴────┐    
+                                           {i=1}         { =2}     {p=2}         {a=2}
 ```
 
-Due to the sorted nature of the order book, storing these limits in a binary search tree is suitable since it maintains the order on each mutation (insertion / deletion). The idea is to use a binary search tree to store the limits and for each limit use a queue to store all the orders in the limit. The reason for using a queue is due to the fact that the order execution follows a first in first out scheme which can be achieved easily with queues. For simplicity, we call them a limit tree here and for an order book there will be two limit tree, one for bid and another for ask. below shows an illustration of the two limit trees.
+For this given tree, the serialized tree would be a string of *"01y001i1 01p1a"*. The serialized tree is in fact just a pre-order traversal of the tree where it follows the sequence of root $->$ left $->$ right. If the current node is a leaf node, then it appends "1" + "\<character>" onto the string, otherwise it appends "0". To reconstruct the tree from this string, it is just the reverse process of the above where it traverse through the string and construct the tree following its pre-order traversal.
 
-shows two limit trees, the tree highlighted in green is for bids and the tree highlighted in red is for asks. As can be seen, the tree resembles a binary search tree exactly where there are at most two child nodes for each node and all the nodes are sorted in-order. One notable property here is that since the nodes are ordered, the best bid / ask will always be the minimum or maximum node annotated in the figure above. Hence, the order book class have the following properties
+== Encoding as byte array
 
-```java
-public class LOB implements LimitOrderBook {
-    // The tree for storing buy limit levels.
-    private LimitTree buy = new LimitTree(Side.BUY);
+To optimise the storage usage for the encoding and decoding process, instead of storing these zero and one codes as string we store them as an array of `byte` instead.  By doing so we save a lot of space because when we store a "0" as a character it uses 1 byte (8 bits) but in fact we only need a bit to represent this so by using a byte array, we can store 8 codes in a byte instead of 1 code in a byte. So for the encoded message above: 
 
-    // The tree for storing sell limit levels.
-    private LimitTree sell = new LimitTree(Side.SELL);
+#rect(fill: silver, stroke: 1pt, width: 100%, height: 2em, inset: 6.5pt)[
+  #text(font: "CMU Typewriter Text", size: 10pt, weight: "bold")[0 100 110 110 0 101 0 111 0 111]
+]
 
-    // Store the orders according to their id.
-    private HashMap<Long, Order> orders = new HashMap<>();
+if we remove the spacing then it would be *0100110110010101110111*, storing this as a string would need 22 bytes since there are 22 individual charatcters but if we store them as a byte array, it would take only 3 bytes where it looks like
 
-    ...
-}
+#rect(fill: silver, stroke: 1pt, width: 100%, height: 2em, inset: 6.5pt)[
+  #text(font: "CMU Typewriter Text", size: 10pt, weight: "bold")[01001101, 10010101, 11011100]
+]
+
+Note that there are two extra zeroes at the last byte for padding since every byte is 8 bits long. The example of byte array above is incomplete because when using byte array we need to implement our own "End of file" mechanism which will be discussed later. However by using byte arrays, it also forces us to use bitwise operations in code since we deal directly with bits now hence why in `src/main/java/huffman/Huffman.java` you will see a lot of bitwise operations being used.
+
+== Arbitrary End-of-File
+
+When we deal with strings, we do not have to think of annotating the end of the message since every character is a byte and the last code will always be the last character of the string and you can know that it is the end of the string by checking its length. However for a byte array we do not know how many zeroes was padded after the actual ending of the code. Take the example byte array given above where two extra zeroes are padded at the last byte, during decode how could one possibly know that the last two zeroes are padding or they are part of the encoding?
+
+My solution is to treat the last two bytes as special bytes and we can store the padding information in the last two bytes. For example given the encoding of *0100110110010101110111*, we would produce a byte array of 
+
+#rect(fill: silver, stroke: 1pt, width: 100%, height: 2em, inset: 6.5pt)[
+  #text(font: "CMU Typewriter Text", size: 10pt, weight: "bold")[01001101, 10010101, 11010100, 11000010]
+]
+
+Note that for the last bytes we use a special format where the first four bits store the actual encoding and the last four bits are used to store how many bits are used. For example,
+
+```
+11010100 -> 1101 (the actual code)
+         -> 0100 (represents 4 in binary indicating four bits are used)
+
+11000010 -> 1100 (the actual code)
+         -> 0010 (represents 2 in binary indicating two bits are used)
 ```
 
-Here the class also contains a `HashMap` mapping each order with their corresponding order id which is simply just a `long` integer, this is so that we can do a `O(1)` order query for the `cancel` and `amend` operations.
+Hence in the decoding process, we would first look at the last four bits and determine the size and only read the number of bits in the first four bits up to size.
 
-As for the `LimitTree`, we store the the limits in a `BST` (Binary Search Tree) and have some properties to track the metrics so they can be accessed in `O(1)` time such as `lastPrice`, `count`, `volume` and `best`.
+= Test cases
 
-```java
-public class LimitTree {
-    // The underlying binary search tree that stores the limits.
-    BST<Limit> limits = new BST<>();
-
-    // The price where the last order is executed.
-    long lastPrice = 0;
-
-    // The total number of active orders in this tree across all limits.
-    int count = 0;
-
-    // The total volume aggregated from all orders in this tree across all limits.
-    long volume = 0;
-
-    // The current top price limit.
-    Limit best;
-
-    // Indicate whether this is a buy tree or a sell tree.
-    Side side;
-
-    ...
-}
-```
-
-Note that `Limit` here represents each individual node in the tree and all the orders are stored in the `Limit`. For the `Limit` class, it has the following properties:
-
-```java
-public class Limit implements Comparable<Limit> {
-    // The price for this limit level.
-    public long price;
-
-    // The number of orders at this limit level
-    public int count = 0;
-
-    // The total volume at this limit level
-    public long volume = 0;
-
-    // A queue of orders at this limit level
-    public LinkedList<Order> orders = new LinkedList<>();
-
-    @Override
-    public int compareTo(Limit o) {
-        if (price == o.price)
-            return 0;
-        else if (price > o.price)
-            return 1;
-        else
-            return -1;
-    }
-
-    ...
-}
-```
-
-Note that it is required for the `Limit` class to implement `Comparable` as the `BST` class uses this implementation to compare different limits and keep them in a sorted manner. The `compareTo` method is simply overrided with a comparison using the `price` since limits are sorted by price in the order book. Moreover, the orders are kept in a queue using a linked list since this allows fast insertion and removal along with the ability to grow dynamically.
-
-= Data structures and test cases
-
-The data structures aforementioned such as `BST` are handwritten by myself and they can be found in the `lob.ds` package. Note that there also a `Stack` class which is used to implement iterators for the `BST` class. In addition, the `BST` supports three different traversal methods *PreOrderTraversal*, *InOrderTraversal* and *PostOrderTraversal* although only *InOrderTraversal* and *PostOrderTraversal* are used in the `LimitTree` implementation. 
-
-The test cases can be found in `src/test/java/lob` and can be ran by executing `./gradlew test` in the terminal.
+The test cases for the aforementioned classes can be found in `src/test/java/huffman` and can be ran by executing `./gradlew test` in the terminal.
 
 = Examples
 
-To put the order book to test, I wrote three runnable examples located in the `lob.example` package: 
+There is only one example in this project where it can be ran by running `./gradlew run` in the terminal. What the example program will do is that it will compress the file `src/main/resources/test.txt` into `src/main/resources/compressed.hm` then decompress it into `src/main/resources/decompressed.txt`. To test it with your own files, just change the contents in the `text.txt` file and re-run the program again.
 
-1. *Download*
-2. *Benchmark*
-3. *Visualiser*
-
-== Download
-
-This example connects to the #link("https://www.bitstamp.net/")[Bitstamp] cryptocurrency exchange through their public WebSocket API and download all the L3 orderbook (market-by-order) update messages to a local `.ndjson` file. This data is required for benchmarking the orderbook using the *Benchmark* example. To run the download example: 
+In the example, I used the C source code of GNU's malloc implementation which is 6049 lines. After running the program, this is the result of `ls -la`:
 
 ```sh
-# On unix systems
-./gradlew run -Plaunch=lob.example.Download
-
-# On windows
-./gradlew.bat run -Plaunch=lob.example.Download
+.rw-r--r--  121k marcus 26 Mar 17:00 compressed.hm
+.rw-r--r--@ 197k marcus 26 Mar 17:00 decompressed.txt
+.rw-r--r--@ 197k marcus 26 Mar 16:35 test.txt
 ```
 
-Note that to download 1 million messages it took 7.5 hours and the final file size is about _321MB_, if you would like to run the benchmark on your machine instead of downloading it, refer to the *README.md* file in this project as I have attached a Google Drive link to the data. Simply download the file and place it at `app/src/main/resources/l3_orderbook.ndjson`.
+As can be seen, in this case the program compressed the original file by 38.5%.
 
-== Benchmark
+= Conclusion
 
-This example simply reads all the downloaded messages and feed them into the limit order book and measure how long it takes. The benchmark result is discussed in later sections. To run the example: 
+In conclusion, I had learnt a lot through out this assignment both in programming using bitwise operations and the fundamentals of information theory. One of the biggest challenge which turns out to be an achievement is that I was able to implement the encoding to byte arrays, I was stuck for days but eventually figured it out through multiplle trials and errors. 
 
-```sh
-# On unix systems
-./gradlew run -Plaunch=lob.example.Benchmark
-
-# On windows
-./gradlew.bat run -Plaunch=lob.example.Benchmark
-```
-
-Note that the file `app/src/main/resources/l3_orderbook.ndjson` must exists, otherwise the example will throw a runtime exception and exit with error.
-
-== Visualiser 
-
-This example comes with a simple GUI written with #link("https://openjfx.io/index.html")[JavaFX] that visualise the limit order book similar to what traders see on their trading terminal. The live orders data comes from Bitstamp's publicly available L3 Orderbook data feed through WebSocket. To run the example:
-
-```sh
-# On unix systems
-./gradlew run -Plaunch=lob.example.Visualiser
-
-# On windows
-./gradlew.bat run -Plaunch=lob.example.Visualiser
-```
-
-Once the visualiser is launched, a window should appear as follows:
-
-visualises the BTCUSD orderbook and it will be updated as actual orders are submitted to the Bitstamp exchange, the *Volume* column is the total order quantity at the limit level and *Value* column shows the total value (USD) that the limit level holds, it is calculated by $ "Value" = "Price" times "Volume" $
-
-The spread here shows the bid ask spread in the orderbook where it is the difference between the best bid price and best ask price. In this case, $ 67034 "(best ask)" - 66990 "(best bid)" = 44 "(spread)" $
-
-= Performance benchmark
-
-To measure how well our orderbook performs, the benchmark example instantiate the order book, reads and parses the messages from the `.ndjson` file and perform the required operation for each message. The example then records the total time taken for each run and repeat the process 10 times and lastly write the result to a `.csv` file. We then plot the graphs below using a python script `plot.py`.
-
-== Latency analysis
-
-Figure on the left above shows the benchmark result in terms of the time taken to process one million messages and as can be seen that the first run takes a significantly longer time than the others, this is probably due to system cache are still cold meaning higher chances of cache misses. This can be evidented by the fact that after the first run all subsequent runs have negligible difference in the result which is a sign that the system cache has been warmed up and lesser chances of cache misses. 
-
-Figure on the right above shows the average latency per operation which is calculated by $ "total time taken" div "number of operations" $ In this case the graph are very similar because there are one million operations hence the difference is only the time unit. The trend is similar to the previous graph due to cache warm up.
-
-Based on the fastest run from the results above we can deduce that the order book is capable to process 1 million operations in *143.09ms* with an average latency of *143.09ns* per operation.
-
-Note that the duration for reading from file and message parsing has been excluded since we only concern about the order book operations here. 
-
-== Throughput analysis 
-
-above shows the throughput measured for the order book across all ten runs and the order book is performing exceptionally fast given that the benchmark was performed on commercial hardware, in this case a _2020 M1 Macbook Air (8GB RAM)_ which on average it is able to achieve *6,679,546 op/s* and *6,988,577 op/s* on the fastest run.
-
-== Conclusion
-
-Generally I am very satisfied with the outcome of the project, seeing that by using an efficient data structure it is possible to write highly performant software and for comparison I found the following resources:
-
-- #text(fill: blue)[#underline(link("https://github.com/charles-cooper/itch-order-book")[charles-cooper/itch-order-book])] - A very fast order book implementation in C++ using only `std::vector` achieving 61ns per operation.
-- #text(fill: blue)[#underline(link("https://www.elitetrader.com/et/threads/how-fast-is-your-limit-order-book-implementation.255567/")[How fast is your limit order book implementation?])] - An old forum post where some people claimed that their implementation are around $approx$ 210ns per operation.
-
-Although these comparison are unfair because the results are taken from different machines but having an implementation where the performance is close to what people use in the industry is impressive enough.
+As an overall, I am satisfied with what this project had achieved despite it only supports compression and decompression for text files (the example program does not work for media files since those files are binary files).
