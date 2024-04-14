@@ -1,0 +1,73 @@
+web_traffic:
+  type: Article
+  author:
+    - Ben Newton
+    - Kevin Jeffay
+    - Jay Aikat
+  title:
+    value: "The Continued Evolution of Web Traffic"
+    verbatim: true
+  date: 2013-08-01
+
+engineering_web_cache:
+  type: Article
+  author:
+    - Jian Yin
+    - Lorenzo Alvisi
+    - Mike Dahlin
+    - Arun Iyengar
+  title:
+    value: "Engineering Web Cache Consistency"
+    verbatim: true
+  date: 2002-08-01
+  page-range: 224-259
+  serial-number:
+    doi: 10.1145/572326.572329
+
+scaling_memcached:
+  type: Article
+  author:
+    - Rajesh Nishtala
+    - Hans Fugal
+    - Steven Grimm
+    - Marc Kwiatkowski
+    - Herman Lee
+    - Harry C. Li
+    - Ryan McElroy
+    - Mike Paleczny
+    - Daniel Peek
+    - Paul Saab
+    - David Stafford
+    - Tony Tung
+    - Venkateshwaran Venkataramani
+  title:
+    value: "Scaling Memcache at Facebook"
+    verbatim: true
+  date: 2013-04-03
+
+put_an_elephant:
+  type: Article
+  author:
+    - Kefei Wang
+    - Jian Liu
+    - Feng Chen
+  title:
+    value: "Put an elephant into a fridge: optimizing cache efficiency for in-memory key-value stores"
+    verbatim: true
+  date: 2020-05-01
+  page-range: 1540-1554
+  serial-number:
+    doi: 10.14778/3397230.3397247
+
+huge_pages:
+  type: Article
+  author:
+    - Dirk Grunwald
+    - Benjamin Zorn
+    - Robert Henderson
+  title:
+    value: "Making Huge Pages Actually Useful"
+    verbatim: true
+  date: 2018-01-01
+  serial-number:
+    doi: 10.1145/3173162.3173203

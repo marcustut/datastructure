@@ -40,8 +40,12 @@ javafx {
 }
 
 application {
-    // Define the main class for the application.
-    mainClass = "cache.example.App"
+    // // Define the main class for the application.
+    // mainClass = "cache.example.App"
+    // Select a different main class based on specified property
+    if (hasProperty("launch")) {
+        mainClass.set("${property("launch")}")
+    }
 }
 
 tasks.named<Test>("test") {
