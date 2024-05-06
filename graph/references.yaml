@@ -1,0 +1,48 @@
+internet_boom:
+  type: Article
+  author:
+    - Tim Gulden
+  title:
+    value: "The Internet: Boom, Bust and Beyond"
+    verbatim: true
+  date: 2002-10-01
+
+social_media_history:
+  type: Article
+  author:
+    - Manish Dhingra
+    - Rakesh K. Mudgal
+  title:
+    value: "Historical Evolution of Social Media: An Overview"
+    verbatim: true
+  date: 2019-03-15
+  serial-number:
+    doi: 10.2139/ssrn.3395665
+
+social_network_analysis:
+  type: Article
+  author:
+    - Dmitri Goldenberg
+  title:
+    value: "Social Network Analysis: From Graph Theory to Applications with Python"
+    verbatim: true
+  date: 2019-05-01
+  serial-number: 
+    doi: 10.13140/RG.2.2.36809.77925
+
+api_response_time:
+  type: Web
+  title: "What's the difference between API Latency and API Response Time?"
+  url: https://blog.sentry.io/whats-the-difference-between-api-latency-and-api-response-time/#:~:text=Just%20to%20have%20a%20number,to%20abandon%20the%20application%2Fwebsite.
+  author: Lazar Nikolov
+
+facebook_wosn_links:
+  type: Article
+  title: "On the Evolution of User Interaction in Facebook"
+  author:
+    - Bimal Viswanath
+    - Alan Mislove
+    - Meeyoung Cha
+    - Krishna P. Gummadi
+  date: 2009-08-01
+  url: https://socialnetworks.mpi-sws.org/data-wosn2009.html

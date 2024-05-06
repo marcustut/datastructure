@@ -20,7 +20,7 @@ public class Benchmark {
         Graph graph = dataset.toGraph();
 
         // Random rand = new Random();
-        int count = 100;
+        int count = 1000;
         long dijkstraTotal = 0;
         long bfsTotal = 0;
         long commonTotal = 0;
